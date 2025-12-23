@@ -57,7 +57,8 @@ export async function saveReading(data: InsertReadingData) {
 /**
  * 특정 리딩 결과를 ID로 조회
  * @param id 리딩 ID
- * @returns 리딩 데이터 또는 null
+ * @returns 리딩 데이터
+ * @throws 조회 실패 시 에러
  */
 export async function getReadingById(id: string) {
   const { data, error } = await supabase
@@ -68,7 +69,7 @@ export async function getReadingById(id: string) {
 
   if (error) {
     console.error('리딩 조회 실패:', error);
-    return null;
+    throw new Error(`리딩 조회에 실패했습니다: ${error.message}`);
   }
 
   return data as ReadingRow;

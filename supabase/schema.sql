@@ -5,7 +5,7 @@ CREATE TABLE IF NOT EXISTS readings (
   concern TEXT NOT NULL CHECK (char_length(concern) >= 10),
   card_id VARCHAR(20) NOT NULL,
   orientation VARCHAR(10) NOT NULL CHECK (orientation IN ('upright', 'reversed')),
-  interpretation TEXT NOT NULL CHECK (char_length(interpretation) BETWEEN 300 AND 500),
+  interpretation TEXT NOT NULL CHECK (char_length(interpretation) >= 100),
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
