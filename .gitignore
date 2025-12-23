@@ -38,3 +38,19 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cache
+.turbo
+.swc
+.cache
+
+# IDE
+.vscode
+.idea
+*.code-workspace
+
+# OS
+Thumbs.db
+
+# CodeRabbit
+.coderabbit.yaml
