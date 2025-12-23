@@ -32,7 +32,7 @@
 ### 주요 의존성
 ```json
 {
-  "@google/generative-ai": "^0.24.1",
+  "@google/genai": "^1.0.0",
   "@supabase/supabase-js": "^2.89.0",
   "next": "^15.5.9",
   "react": "^19.0.0"
@@ -48,6 +48,7 @@ tarogak-mvp/
 │   │   ├── layout.tsx    # 루트 레이아웃
 │   │   ├── page.tsx      # 홈페이지 (카테고리 선택)
 │   │   ├── globals.css   # 전역 스타일
+│   │   ├── api/reading/  # 타로 리딩 API (POST/GET)
 │   │   ├── reading/      # 고민 입력 페이지
 │   │   └── result/[id]/  # 리딩 결과 페이지
 │   ├── components/       # React 컴포넌트
@@ -57,6 +58,7 @@ tarogak-mvp/
 │   │   ├── ReadingResult.tsx
 │   │   └── CardMeaningModal.tsx
 │   ├── lib/              # 유틸리티 및 서비스
+│   │   ├── gemini.ts     # Gemini API 래퍼 (@google/genai)
 │   │   ├── supabase.ts   # Supabase 클라이언트 및 DB 함수
 │   │   └── utils.ts      # cn() 등 유틸리티
 │   ├── types/            # TypeScript 타입 정의
@@ -193,9 +195,15 @@ npx tsx scripts/validate-cards.ts  # 78장 카드 데이터 검증
 
 ### Supabase 함수 (`src/lib/supabase.ts`)
 ```typescript
-createReading(data): Promise<Reading>     // 리딩 생성
-getReadingById(id): Promise<Reading>      // ID로 리딩 조회
-getRecentReadings(limit): Promise<Reading[]>  // 최근 리딩 목록
+saveReading(data): Promise<ReadingRow>       // 리딩 저장
+getReadingById(id): Promise<ReadingRow>      // ID로 리딩 조회
+getRecentReadings(limit): Promise<ReadingRow[]>  // 최근 리딩 목록
+```
+
+### Gemini API 함수 (`src/lib/gemini.ts`)
+```typescript
+generateInterpretation(card, orientation, category, concern): Promise<string>
+// 카드 의미 + 사용자 고민 맥락으로 300-500자 해석 생성
 ```
 
 ## 참고 문서
