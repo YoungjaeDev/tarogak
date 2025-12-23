@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { drawRandomCard, getCardById } from '@/data/cards';
 import { generateInterpretation, GeminiError } from '@/lib/gemini';
-import { saveReading } from '@/lib/supabase';
+import { saveReading, getReadingById } from '@/lib/supabase';
 import type { Category, Orientation } from '@/types';
+
+// 검증 상수
+const MIN_CONCERN_LENGTH = 10;
+const MAX_CONCERN_LENGTH = 500;
+
+// HTML 태그 제거 (XSS 방지)
+function sanitizeInput(input: string): string {
+  return input.replace(/<[^>]*>/g, '').trim();
+}
 
 // 유효한 카테고리 목록
 const VALID_CATEGORIES: Category[] = [
@@ -59,12 +68,12 @@ function validateRequest(body: ReadingRequest): {
     return { valid: false, error: '고민 내용을 입력해주세요.' };
   }
 
-  if (body.concern.trim().length < 10) {
-    return { valid: false, error: '고민 내용을 10자 이상 입력해주세요.' };
+  if (body.concern.trim().length < MIN_CONCERN_LENGTH) {
+    return { valid: false, error: `고민 내용을 ${MIN_CONCERN_LENGTH}자 이상 입력해주세요.` };
   }
 
-  if (body.concern.length > 500) {
-    return { valid: false, error: '고민 내용은 500자 이하로 입력해주세요.' };
+  if (body.concern.length > MAX_CONCERN_LENGTH) {
+    return { valid: false, error: `고민 내용은 ${MAX_CONCERN_LENGTH}자 이하로 입력해주세요.` };
   }
 
   return { valid: true };
@@ -85,7 +94,7 @@ export async function POST(request: NextRequest) {
     }
 
     const category = body.category as Category;
-    const concern = body.concern.trim();
+    const concern = sanitizeInput(body.concern);
 
     // 카드 랜덤 선택
     const card = drawRandomCard();
@@ -170,7 +179,6 @@ export async function GET(request: NextRequest) {
     }
 
     // Supabase에서 리딩 조회
-    const { getReadingById } = await import('@/lib/supabase');
     const reading = await getReadingById(id);
 
     // 카드 정보 조회

@@ -97,9 +97,9 @@ export async function generateInterpretation(
       },
     });
 
-    const text = response.text;
+    const text = response?.text ?? '';
 
-    if (!text || text.trim().length === 0) {
+    if (text.trim().length === 0) {
       throw new GeminiError('빈 응답이 반환되었습니다.', 'API_ERROR');
     }
 
