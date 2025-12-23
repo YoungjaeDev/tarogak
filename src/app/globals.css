@@ -1,0 +1,9 @@
+@import "tailwindcss";
+
+:root {
+  font-family: var(--font-geist-sans), var(--font-noto-sans-kr), sans-serif;
+}
+
+code, pre {
+  font-family: var(--font-geist-mono), monospace;
+}
