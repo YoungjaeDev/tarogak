@@ -44,10 +44,21 @@
 ```
 tarogak-mvp/
 ├── src/
-│   └── app/              # Next.js App Router
-│       ├── layout.tsx    # 루트 레이아웃
-│       ├── page.tsx      # 홈페이지
-│       └── globals.css   # 전역 스타일
+│   ├── app/              # Next.js App Router
+│   │   ├── layout.tsx    # 루트 레이아웃
+│   │   ├── page.tsx      # 홈페이지
+│   │   └── globals.css   # 전역 스타일
+│   ├── types/            # TypeScript 타입 정의
+│   │   └── index.ts      # Card, Reading, Category 등
+│   ├── data/             # 정적 데이터
+│   │   └── cards.ts      # 78장 타로 카드 데이터
+│   └── __tests__/        # Jest 테스트 파일
+│       └── cards.test.ts # 카드 데이터 테스트
+├── public/
+│   └── cards/            # 타로 카드 이미지
+│       └── README.md     # 이미지 다운로드 가이드
+├── scripts/              # 유틸리티 스크립트
+│   └── validate-cards.ts # 카드 데이터 검증
 ├── .claude/              # Claude Code 설정
 │   ├── agents/          # 커스텀 에이전트 정의
 │   ├── commands/        # 프로젝트 커맨드/스킬
@@ -132,6 +143,28 @@ refactor: 리팩토링
 - 커뮤니티/댓글 기능
 - 타로 외 다른 점술
 
+## 타로 카드 데이터 구조
+
+### 카드 데이터 (`src/data/cards.ts`)
+- 메이저 아르카나 22장: The Fool(0) ~ The World(21)
+- 마이너 아르카나 56장: 완드, 컵, 소드, 펜타클 각 14장 (에이스~10, 시종, 기사, 여왕, 왕)
+- 각 카드는 정방향/역방향 의미, 키워드 포함
+
+### 유틸리티 함수
+```typescript
+getCardById(id: string): Card | undefined  // ID로 카드 조회
+drawRandomCard(): Card                     // 랜덤 카드 뽑기 (crypto.getRandomValues 사용)
+getCardsBySuit(suit): Card[]              // 수트별 조회
+getMajorArcana(): Card[]                  // 메이저 아르카나 조회
+getMinorArcana(): Card[]                  // 마이너 아르카나 조회
+```
+
+### 데이터 검증
+```bash
+npx tsx scripts/validate-cards.ts  # 78장 카드 데이터 검증
+```
+
 ## 참고 문서
 - 제품 요구사항: `tarogak-prd.md`
+- 타로 카드 이미지 가이드: `public/cards/README.md`
 - API 문서: (추후 추가 예정)
