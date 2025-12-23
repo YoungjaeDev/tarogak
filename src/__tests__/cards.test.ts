@@ -85,4 +85,22 @@ describe('타로 카드 데이터', () => {
       expect(card.imageUrl).toMatch(/^\/cards\//);
     });
   });
+
+  test('메이저 아르카나 카드는 0-21 범위의 number를 가져야 함', () => {
+    const major = getMajorArcana();
+    major.forEach((card) => {
+      expect(card.number).toBeDefined();
+      expect(card.number).toBeGreaterThanOrEqual(0);
+      expect(card.number).toBeLessThanOrEqual(21);
+    });
+  });
+
+  test('마이너 아르카나 카드는 1-14 범위의 number를 가져야 함', () => {
+    const minor = getMinorArcana();
+    minor.forEach((card) => {
+      expect(card.number).toBeDefined();
+      expect(card.number).toBeGreaterThanOrEqual(1);
+      expect(card.number).toBeLessThanOrEqual(14);
+    });
+  });
 });

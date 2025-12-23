@@ -872,7 +872,9 @@ export function getCardById(id: string): Card | undefined {
 
 // 랜덤 카드 뽑기
 export function drawRandomCard(): Card {
-  const randomIndex = Math.floor(Math.random() * CARDS.length);
+  // 브라우저 환경에서 암호학적으로 안전한 랜덤 사용
+  const randomValues = crypto.getRandomValues(new Uint32Array(1));
+  const randomIndex = randomValues[0] % CARDS.length;
   return CARDS[randomIndex];
 }
 
