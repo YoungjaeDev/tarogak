@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Category } from "@/types";
 import { Button } from "@/components/ui/button";
@@ -14,8 +14,18 @@ export default function ReadingPage() {
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [concern, setConcern] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const canSubmit = selectedCategory !== null && concern.length >= 10;
+
+  // 컴포넌트 언마운트 시 타이머 정리
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
@@ -24,7 +34,7 @@ export default function ReadingPage() {
 
     // TODO: 실제 API 호출로 대체 필요
     // 임시로 3초 후 결과 페이지로 이동
-    setTimeout(() => {
+    timeoutRef.current = setTimeout(() => {
       router.push(`/result/temp-id`);
     }, 3000);
   };

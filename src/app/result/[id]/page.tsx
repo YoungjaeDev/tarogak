@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ReadingResult from "@/components/ReadingResult";
@@ -8,16 +8,20 @@ import CardMeaningModal from "@/components/CardMeaningModal";
 import { ArrowLeft, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
 import { drawRandomCard } from "@/data/cards";
-import { Orientation } from "@/types";
+import { Card, Orientation } from "@/types";
 
 export default function ResultPage() {
   const router = useRouter();
   const [showCardMeaning, setShowCardMeaning] = useState(false);
 
   // TODO: 실제로는 API에서 결과를 가져와야 함
-  // 임시로 랜덤 카드와 더미 데이터 사용
-  const card = drawRandomCard();
-  const orientation: Orientation = Math.random() > 0.5 ? "upright" : "reversed";
+  // useMemo로 초기 렌더링 시 한 번만 카드를 뽑아서 일관성 유지
+  const { card, orientation } = useMemo(() => {
+    const drawnCard: Card = drawRandomCard();
+    const drawnOrientation: Orientation = Math.random() > 0.5 ? "upright" : "reversed";
+    return { card: drawnCard, orientation: drawnOrientation };
+  }, []);
+
   const interpretation =
     "당신은 지금 새로운 시작을 앞두고 있습니다. 이 카드는 당신에게 변화를 두려워하지 말고, 내면의 목소리에 귀 기울이라고 말하고 있어요.\n\n현재 상황에서 조금 더 용기를 내어 한 걸음 나아가 보는 건 어떨까요? 비록 불확실하더라도, 당신 안에는 이미 충분한 능력과 지혜가 있습니다.\n\n다만 무모한 결정보다는 신중하게 준비하면서도, 기회가 왔을 때는 과감하게 잡을 수 있는 균형이 필요해 보입니다.";
 
