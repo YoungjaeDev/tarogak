@@ -2,17 +2,21 @@ import { createClient } from '@supabase/supabase-js';
 import type { Category, Orientation } from '@/types';
 
 // Supabase 환경변수 검증
+// 새로운 키 형식 (sb_publishable_...) 또는 기존 키 형식 (eyJ...) 모두 지원
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+const supabaseKey =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY ||
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || !supabaseAnonKey) {
+if (!supabaseUrl || !supabaseKey) {
   throw new Error(
-    'Supabase 환경변수가 설정되지 않았습니다. .env.local 파일을 확인하세요.'
+    'Supabase 환경변수가 설정되지 않았습니다. .env.local 파일을 확인하세요.\n' +
+      '필요한 환경변수: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY'
   );
 }
 
 // Supabase 클라이언트 생성
-export const supabase = createClient(supabaseUrl, supabaseAnonKey);
+export const supabase = createClient(supabaseUrl, supabaseKey);
 
 // 리딩 결과 데이터베이스 타입
 export interface ReadingRow {

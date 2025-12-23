@@ -1,4 +1,8 @@
-import { testConnection } from '../src/lib/supabase';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+
+// .env.local 파일 로드 (다른 모듈 import 전에 실행)
+dotenv.config({ path: path.join(__dirname, '..', '.env.local') });
 
 /**
  * Supabase 연결 테스트 스크립트
@@ -9,6 +13,9 @@ import { testConnection } from '../src/lib/supabase';
  */
 async function main() {
   console.log('Supabase 연결 테스트 시작...\n');
+
+  // 환경변수 로드 후 동적 import
+  const { testConnection } = await import('../src/lib/supabase');
 
   try {
     const isConnected = await testConnection();

@@ -90,13 +90,16 @@ tarogak-mvp/
 `.env.local.example`을 `.env.local`로 복사 후 다음 값 설정:
 
 ```bash
-# Supabase
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+# Supabase (새로운 API 키 형식 - 2024)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_your_key_here
 
 # Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
 ```
+
+> 참고: Supabase가 2024년부터 새로운 API 키 형식(`sb_publishable_...`)을 사용합니다.
+> 기존 `anon` 키(eyJ... 형식)도 호환됩니다.
 
 ### 로컬 개발 서버 실행
 ```bash

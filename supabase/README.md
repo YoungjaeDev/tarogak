@@ -20,20 +20,23 @@
 ### 1.3 API 키 확인
 프로젝트 생성 후 Settings > API에서 다음 정보 확인:
 - **Project URL**: `https://xxx.supabase.co` 형식
-- **anon public key**: 클라이언트에서 사용할 공개 키
+- **Publishable Key** (새 형식): `sb_publishable_...` 형식의 공개 키
+  - 또는 기존 **anon public key**: `eyJ...` 형식 (호환 지원)
 
 ## 2. 환경변수 설정
 
 프로젝트 루트의 `.env.local` 파일 생성:
 
 ```bash
-# Supabase
+# Supabase (새로운 API 키 형식 - 2024)
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
+NEXT_PUBLIC_SUPABASE_PUBLISHABLE_DEFAULT_KEY=sb_publishable_your_key_here
 
 # Gemini AI
 GEMINI_API_KEY=your_gemini_api_key
 ```
+
+> 참고: 2024년부터 Supabase가 새로운 키 형식을 사용합니다. 기존 `anon` 키도 호환됩니다.
 
 ## 3. 데이터베이스 스키마 적용
 
