@@ -46,8 +46,19 @@ tarogak-mvp/
 ├── src/
 │   ├── app/              # Next.js App Router
 │   │   ├── layout.tsx    # 루트 레이아웃
-│   │   ├── page.tsx      # 홈페이지
-│   │   └── globals.css   # 전역 스타일
+│   │   ├── page.tsx      # 홈페이지 (카테고리 선택)
+│   │   ├── globals.css   # 전역 스타일
+│   │   ├── reading/      # 고민 입력 페이지
+│   │   └── result/[id]/  # 리딩 결과 페이지
+│   ├── components/       # React 컴포넌트
+│   │   ├── ui/           # Shadcn UI 컴포넌트
+│   │   ├── CategorySelector.tsx
+│   │   ├── ConcernInput.tsx
+│   │   ├── ReadingResult.tsx
+│   │   └── CardMeaningModal.tsx
+│   ├── lib/              # 유틸리티 및 서비스
+│   │   ├── supabase.ts   # Supabase 클라이언트 및 DB 함수
+│   │   └── utils.ts      # cn() 등 유틸리티
 │   ├── types/            # TypeScript 타입 정의
 │   │   └── index.ts      # Card, Reading, Category 등
 │   ├── data/             # 정적 데이터
@@ -55,10 +66,13 @@ tarogak-mvp/
 │   └── __tests__/        # Jest 테스트 파일
 │       └── cards.test.ts # 카드 데이터 테스트
 ├── public/
-│   └── cards/            # 타로 카드 이미지
-│       └── README.md     # 이미지 다운로드 가이드
+│   └── cards/            # 타로 카드 이미지 (78장)
+├── supabase/             # Supabase 설정
+│   ├── schema.sql        # DB 스키마
+│   └── README.md         # 설정 가이드
 ├── scripts/              # 유틸리티 스크립트
-│   └── validate-cards.ts # 카드 데이터 검증
+│   ├── validate-cards.ts # 카드 데이터 검증
+│   └── download-tarot-images.ts  # 카드 이미지 다운로드
 ├── .claude/              # Claude Code 설정
 │   ├── agents/          # 커스텀 에이전트 정의
 │   ├── commands/        # 프로젝트 커맨드/스킬
@@ -164,7 +178,25 @@ getMinorArcana(): Card[]                  // 마이너 아르카나 조회
 npx tsx scripts/validate-cards.ts  # 78장 카드 데이터 검증
 ```
 
+## Supabase 설정
+
+### DB 스키마 적용
+```bash
+# supabase/schema.sql을 Supabase SQL Editor에서 실행
+```
+
+### 주요 테이블
+- `readings`: 타로 리딩 결과 저장 (card_id, category, concern, interpretation 등)
+
+### Supabase 함수 (`src/lib/supabase.ts`)
+```typescript
+createReading(data): Promise<Reading>     // 리딩 생성
+getReadingById(id): Promise<Reading>      // ID로 리딩 조회
+getRecentReadings(limit): Promise<Reading[]>  // 최근 리딩 목록
+```
+
 ## 참고 문서
 - 제품 요구사항: `tarogak-prd.md`
 - 타로 카드 이미지 가이드: `public/cards/README.md`
+- Supabase 설정 가이드: `supabase/README.md`
 - API 문서: (추후 추가 예정)
