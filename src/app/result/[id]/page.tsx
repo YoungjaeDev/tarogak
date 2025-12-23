@@ -1,29 +1,81 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import ReadingResult from "@/components/ReadingResult";
 import CardMeaningModal from "@/components/CardMeaningModal";
 import { ArrowLeft, Home, RefreshCw } from "lucide-react";
 import Link from "next/link";
-import { drawRandomCard } from "@/data/cards";
-import { Card, Orientation } from "@/types";
+import ShareButtons from "@/components/ShareButtons";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { Card, Category, Orientation, StoredReading } from "@/types";
+import { toast } from "sonner";
+
+const STORAGE_KEY = "tarogak_readings";
+
+interface ReadingResponse {
+  id: string;
+  category: Category;
+  concern: string;
+  card: Card;
+  orientation: Orientation;
+  interpretation: string;
+}
 
 export default function ResultPage() {
   const router = useRouter();
+  const params = useParams<{ id: string }>();
   const [showCardMeaning, setShowCardMeaning] = useState(false);
+  const [reading, setReading] = useState<ReadingResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [, setStoredReadings] = useLocalStorage<StoredReading[]>(STORAGE_KEY, []);
 
-  // TODO: 실제로는 API에서 결과를 가져와야 함
-  // useMemo로 초기 렌더링 시 한 번만 카드를 뽑아서 일관성 유지
-  const { card, orientation } = useMemo(() => {
-    const drawnCard: Card = drawRandomCard();
-    const drawnOrientation: Orientation = Math.random() > 0.5 ? "upright" : "reversed";
-    return { card: drawnCard, orientation: drawnOrientation };
-  }, []);
+  useEffect(() => {
+    const fetchReading = async () => {
+      try {
+        const response = await fetch(`/api/reading?id=${params.id}`);
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => null);
+          const message =
+            errorData?.error ?? "리딩 결과를 불러오지 못했습니다.";
+          throw new Error(message);
+        }
 
-  const interpretation =
-    "당신은 지금 새로운 시작을 앞두고 있습니다. 이 카드는 당신에게 변화를 두려워하지 말고, 내면의 목소리에 귀 기울이라고 말하고 있어요.\n\n현재 상황에서 조금 더 용기를 내어 한 걸음 나아가 보는 건 어떨까요? 비록 불확실하더라도, 당신 안에는 이미 충분한 능력과 지혜가 있습니다.\n\n다만 무모한 결정보다는 신중하게 준비하면서도, 기회가 왔을 때는 과감하게 잡을 수 있는 균형이 필요해 보입니다.";
+        const data: ReadingResponse = await response.json();
+        setReading(data);
+
+        const stored: StoredReading = {
+          id: data.id,
+          category: data.category,
+          concern: data.concern,
+          card: {
+            id: data.card.id,
+            name: data.card.name,
+            imageUrl: data.card.imageUrl,
+          },
+          orientation: data.orientation,
+          interpretation: data.interpretation,
+          createdAt: new Date().toISOString(),
+        };
+
+        setStoredReadings((prev) => {
+          const filtered = prev.filter((item) => item.id !== stored.id);
+          return [stored, ...filtered].slice(0, 20);
+        });
+      } catch (error) {
+        const message =
+          error instanceof Error
+            ? error.message
+            : "리딩 결과를 불러오지 못했습니다.";
+        toast.error(message);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchReading();
+  }, [params.id, setStoredReadings]);
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-purple-900 via-purple-950 to-black text-white">
@@ -59,12 +111,22 @@ export default function ResultPage() {
             </p>
           </div>
 
-          <ReadingResult
-            card={card}
-            orientation={orientation}
-            interpretation={interpretation}
-            onShowCardMeaning={() => setShowCardMeaning(true)}
-          />
+          {isLoading ? (
+            <div className="text-center text-purple-300">
+              리딩 결과를 불러오는 중입니다
+            </div>
+          ) : reading ? (
+            <ReadingResult
+              card={reading.card}
+              orientation={reading.orientation}
+              interpretation={reading.interpretation}
+              onShowCardMeaning={() => setShowCardMeaning(true)}
+            />
+          ) : (
+            <div className="text-center text-purple-300">
+              리딩 결과를 찾을 수 없습니다
+            </div>
+          )}
 
           <div className="flex flex-col sm:flex-row gap-4 justify-center pt-8">
             <Link href="/reading">
@@ -77,6 +139,7 @@ export default function ResultPage() {
               </Button>
             </Link>
           </div>
+          <ShareButtons />
 
           <div className="text-center text-sm text-purple-400 pt-4">
             <p>이 해석은 AI에 의해 생성되었습니다</p>
@@ -85,12 +148,14 @@ export default function ResultPage() {
         </div>
       </div>
 
-      <CardMeaningModal
-        card={card}
-        orientation={orientation}
-        open={showCardMeaning}
-        onOpenChange={setShowCardMeaning}
-      />
+      {reading && (
+        <CardMeaningModal
+          card={reading.card}
+          orientation={reading.orientation}
+          open={showCardMeaning}
+          onOpenChange={setShowCardMeaning}
+        />
+      )}
     </main>
   );
 }

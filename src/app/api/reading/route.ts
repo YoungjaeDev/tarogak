@@ -31,6 +31,8 @@ interface ReadingRequest {
 // 응답 타입
 interface ReadingResponse {
   id: string;
+  category: Category;
+  concern: string;
   card: {
     id: string;
     name: string;
@@ -134,6 +136,8 @@ export async function POST(request: NextRequest) {
     // 응답 생성
     const response: ReadingResponse = {
       id: savedReading.id,
+      category: savedReading.category,
+      concern: savedReading.concern,
       card: {
         id: card.id,
         name: card.name,
@@ -193,6 +197,8 @@ export async function GET(request: NextRequest) {
 
     const response: ReadingResponse = {
       id: reading.id,
+      category: reading.category,
+      concern: reading.concern,
       card: {
         id: card.id,
         name: card.name,
