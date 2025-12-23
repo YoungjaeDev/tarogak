@@ -2,12 +2,31 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Category } from "@/types";
+import { Category, StoredReading } from "@/types";
 import { Button } from "@/components/ui/button";
 import CategorySelector from "@/components/CategorySelector";
 import ConcernInput from "@/components/ConcernInput";
+import CardFlipAnimation from "@/components/CardFlipAnimation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
+import useLocalStorage from "@/hooks/useLocalStorage";
+import { toast } from "sonner";
+
+const STORAGE_KEY = "tarogak_readings";
+const ANIMATION_DURATION_MS = 3000;
+
+interface ReadingResponse {
+  id: string;
+  category: Category;
+  concern: string;
+  card: {
+    id: string;
+    name: string;
+    imageUrl: string;
+  };
+  orientation: "upright" | "reversed";
+  interpretation: string;
+}
 
 export default function ReadingPage() {
   const router = useRouter();
@@ -15,6 +34,7 @@ export default function ReadingPage() {
   const [concern, setConcern] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [, setStoredReadings] = useLocalStorage<StoredReading[]>(STORAGE_KEY, []);
 
   const canSubmit = selectedCategory !== null && concern.length >= 10;
 
@@ -29,14 +49,67 @@ export default function ReadingPage() {
 
   const handleSubmit = async () => {
     if (!canSubmit) return;
+    if (!selectedCategory) return;
 
     setIsLoading(true);
 
-    // TODO: 실제 API 호출로 대체 필요
-    // 임시로 3초 후 결과 페이지로 이동
-    timeoutRef.current = setTimeout(() => {
-      router.push(`/result/temp-id`);
-    }, 3000);
+    const animationPromise = new Promise<void>((resolve) => {
+      timeoutRef.current = setTimeout(() => {
+        resolve();
+      }, ANIMATION_DURATION_MS);
+    });
+
+    try {
+      const apiPromise = fetch("/api/reading", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          category: selectedCategory,
+          concern,
+        }),
+      });
+
+      const [response] = await Promise.all([apiPromise, animationPromise]);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const message =
+          errorData?.error ?? "리딩 생성 중 오류가 발생했습니다.";
+        throw new Error(message);
+      }
+
+      const data: ReadingResponse = await response.json();
+
+      const newReading: StoredReading = {
+        id: data.id,
+        category: data.category,
+        concern: data.concern,
+        card: {
+          id: data.card.id,
+          name: data.card.name,
+          imageUrl: data.card.imageUrl,
+        },
+        orientation: data.orientation,
+        interpretation: data.interpretation,
+        createdAt: new Date().toISOString(),
+      };
+
+      setStoredReadings((prev) => {
+        const filtered = prev.filter((item) => item.id !== newReading.id);
+        return [newReading, ...filtered].slice(0, 20);
+      });
+
+      router.push(`/result/${data.id}`);
+    } catch (error) {
+      const message =
+        error instanceof Error
+          ? error.message
+          : "리딩 생성 중 오류가 발생했습니다.";
+      toast.error(message);
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,24 +152,27 @@ export default function ReadingPage() {
 
           {selectedCategory && (
             <div className="flex justify-center pt-4">
-              <Button
-                size="lg"
-                disabled={!canSubmit || isLoading}
-                onClick={handleSubmit}
-                className="text-lg px-8 py-6 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-900 disabled:text-purple-500"
-              >
-                {isLoading ? (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5 animate-pulse" />
-                    카드를 뽑는 중...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="mr-2 h-5 w-5" />
-                    카드 뽑기
-                  </>
-                )}
-              </Button>
+              <div className="flex flex-col items-center gap-4">
+                <Button
+                  size="lg"
+                  disabled={!canSubmit || isLoading}
+                  onClick={handleSubmit}
+                  className="text-lg px-8 py-6 bg-purple-600 hover:bg-purple-700 disabled:bg-purple-900 disabled:text-purple-500"
+                >
+                  {isLoading ? (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5 animate-pulse" />
+                      카드를 뽑는 중...
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 h-5 w-5" />
+                      카드 뽑기
+                    </>
+                  )}
+                </Button>
+                {isLoading && <CardFlipAnimation />}
+              </div>
             </div>
           )}
         </div>

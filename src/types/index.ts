@@ -36,6 +36,17 @@ export interface Reading {
   saved?: boolean; // 저장 여부
 }
 
+// 로컬스토리지 히스토리용 리딩 요약
+export interface StoredReading {
+  id: string;
+  category: Category;
+  concern: string;
+  card: Pick<Card, "id" | "name" | "imageUrl">;
+  orientation: Orientation;
+  interpretation: string;
+  createdAt: string;
+}
+
 // 카테고리 표시 정보
 export interface CategoryInfo {
   value: Category;
